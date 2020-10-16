@@ -1,0 +1,168 @@
+Sub Ticker()
+    
+For Each ws In Worksheets
+
+    Dim Ticker As String
+    Ticker = ""
+    'String variable to track Ticker
+    
+    Dim Year_Change As Double
+    Year_Change = 0
+    'Number variable that keeps track of Yearly Change
+    
+    Dim Year_Open As Double
+    Year_Open = 0
+    'Number variable that keeps track of Yearly opening
+    
+    Dim Year_Close As Double
+    Year_Close = 0
+    'Number variable that keeps track of Yearly Close
+    
+    Dim Percent_Change As Double
+    Percent_Change = 0
+    'Number variable that keeps track of Percent Change
+    
+    Dim Summary_Table_Row As Long
+    Summary_Table_Row = 2
+    'Number variable that keeps track cell location for output
+    
+    Dim T_Volume As Double
+    T_Volume = 0
+    'Number variable that keeps track of Total Volume
+    
+    Dim Max_Change As Double
+    Max_Change = 0
+    'Number variable that keeps track of Greatest % increase
+    
+    Dim Min_Change As Double
+    Min_Change = 0
+    'Number variable that keeps track of Greatest % Decrease
+    
+    Dim Max_Volume As Double
+    Max_Volume = 0
+    'Number variable that keeps track of Greatest Total Volume
+    
+    Dim Max_Ticker As String
+    Max_Ticker = ""
+    'String variable to track Ticker of Greatest % increase
+    
+    Dim Min_Ticker As String
+    Min_Ticker = ""
+    'String variable to track Ticker of Greatest % Decrease
+    
+    Dim Max_Vol_tic As String
+    Max_Vol_tic = ""
+    'String variable to track Ticker of Greatest Total Volumn
+
+
+    
+    Dim Lastrow As Long
+    Dim i As Long
+    
+    Lastrow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+    Year_Open = ws.Cells(2, 3).Value
+    ws.Columns("L").NumberFormat = "0.00%"
+    
+    'Adding header columns for each worksheet
+    ws.Range("J1") = "Ticker"
+    ws.Range("K1") = "Yearly Change"
+    ws.Range("L1") = "Percent Change"
+    ws.Range("M1") = "Total Stock Volume"
+    ws.Range("P2").Value = "Greatest % Increase"
+    ws.Range("P3").Value = "Greatest % Decrease"
+    ws.Range("P4").Value = "Greatest Total Volume"
+    ws.Range("Q1").Value = "Ticker"
+    ws.Range("R1").Value = "Value"
+    
+    
+    
+    'loop to last row skipping header
+    For i = 2 To Lastrow
+    
+        If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+        'Checks Cells for differences
+        
+            Ticker = ws.Cells(i, 1).Value
+            'Gets string value of tickers
+            
+            Year_Close = ws.Cells(i, 6).Value
+            
+            Year_Change = Year_Close - Year_Open
+            
+                'Loop to Avoid divide by zero issue then caluclate Percent change
+                If Year_Open <> 0 Then
+                     Percent_Change = (Year_Change / Year_Open)
+                End If
+            
+            T_Volume = ws.Cells(i, 7).Value
+            'Adds each row of total volume together for a sheet
+            
+            'Print out values to respective cells and sheets
+            ws.Range("J" & Summary_Table_Row).Value = Ticker
+            ws.Range("K" & Summary_Table_Row).Value = Year_Change
+            ws.Range("L" & Summary_Table_Row).Value = Percent_Change
+            
+            
+              
+            
+                'Loop to set Cell formating Color for red or green
+                If ws.Range("K" & Summary_Table_Row).Value < 0 Then
+                    ws.Range("K" & Summary_Table_Row).Interior.ColorIndex = 3
+                Else
+                    ws.Range("K" & Summary_Table_Row).Interior.ColorIndex = 4
+                End If
+            
+            
+            'increment row for out put
+            Summary_Table_Row = Summary_Table_Row + 1
+            
+            Year_Change = 0
+            Year_Close = 0
+            Year_Open = ws.Cells(i + 1, 3).Value
+            
+        ElseIf ws.Cells(i - 1, 1).Value <> ws.Cells(i, 1).Value Then
+             T_Volume = T_Volume + ws.Cells(i, 7).Value
+        
+        Else
+            T_Volume = T_Volume + ws.Cells(i, 7).Value
+            ws.Range("M" & Summary_Table_Row).Value = T_Volume
+         End If
+    Next i
+    
+Lastrow = ws.Cells(Rows.Count, "J").End(xlUp).Row
+    
+    'loop to last row skipping header
+    For i = 2 To Lastrow
+
+        'Conditional finding Greatest % increase and respectible ticker
+        If ws.Cells(i, 12).Value > Max_Change Then
+            Max_Change = ws.Cells(i, 12).Value
+            Max_Ticker = ws.Cells(i, 10).Value
+        End If
+        '******************************************************************
+        'Conditional finding Greatest % Decrease and respectible ticker
+        If ws.Cells(i, 12).Value < Min_Change Then
+            Min_Change = ws.Cells(i, 12).Value
+            Min_Ticker = ws.Cells(i, 10).Value
+        End If
+        '******************************************************************
+        'Conditional finding Greatest % Volume and respectible ticker
+        If ws.Cells(i, 13).Value > Max_Volume Then
+            Max_Volume = ws.Cells(i, 13).Value
+            Max_Vol_tic = ws.Cells(i, 10).Value
+        End If
+        '******************************************************************
+    Next i
+    
+    
+    'Prints out each variable to respective cells
+    ws.Range("Q2").Value = Max_Ticker
+    ws.Range("R2").Value = Max_Change
+    ws.Range("Q3").Value = Min_Ticker
+    ws.Range("R3").Value = Min_Change
+    ws.Range("Q4").Value = Max_Vol_tic
+    ws.Range("R4").Value = Max_Volume
+    
+Next ws
+
+End Sub
